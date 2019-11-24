@@ -4,10 +4,7 @@ import com.artemme.weather_station.dao.StationRepository;
 import com.artemme.weather_station.dao.entity.Station;
 import com.artemme.weather_station.services.HBService;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -36,8 +33,7 @@ public class StationRepositoryImpl implements StationRepository {
     @Override
     public Station find(String id) {
         try {
-            Connection connection = hbService.createConnection();
-            Table stations = connection.getTable(TABLE_NAME);
+            Table stations = getTable();
 
             Get get = new Get(Bytes.toBytes(id));
             get.addFamily(INFO_COLUMNFAMILY);
@@ -57,8 +53,37 @@ public class StationRepositoryImpl implements StationRepository {
         return null;
     }
 
+    @Override
+    public void save(Station station) {
+        Table stations = null;
+        try {
+            stations = getTable();
+            Put put  = new Put(Bytes.toBytes(station.getId()));
+            put.add(INFO_COLUMNFAMILY, NAME_QUALIFIER, station.getName().getBytes());
+            put.add(INFO_COLUMNFAMILY, LOCATION_QUALIFIER, station.getName().getBytes());
+            put.add(INFO_COLUMNFAMILY, DESCRIPTION_QUALIFIER, station.getName().getBytes());
+
+            stations.put(put);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(stations !=null) {
+                try {
+                    stations.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private static String getValue(Result res, byte[] cf, byte[] qualifier) {
         byte[] value = res.getValue(cf, qualifier);
         return value == null? "": Bytes.toString(value);
+    }
+
+    private Table getTable() throws IOException {
+        Connection connection = hbService.createConnection();
+        return connection.getTable(TABLE_NAME);
     }
 }

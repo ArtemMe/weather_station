@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ObservationRepository {
     List<Station> findAll();
-    Observation find();
+    Observation find(String stationId, long maxStamp, int maxCount);
 }

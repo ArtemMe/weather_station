@@ -7,4 +7,5 @@ import java.util.List;
 public interface StationRepository {
     List<Station> findAll();
     Station find(String id);
+    void save(Station station);
 }

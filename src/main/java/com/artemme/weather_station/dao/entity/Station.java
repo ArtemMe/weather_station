@@ -1,6 +1,7 @@
 package com.artemme.weather_station.dao.entity;
 
 public class Station {
+    private String id;
     private String name;
     private String location;
     private String description;
@@ -33,5 +34,13 @@ public class Station {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
