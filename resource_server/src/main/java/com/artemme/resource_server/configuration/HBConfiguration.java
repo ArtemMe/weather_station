@@ -11,7 +11,7 @@ public class HBConfiguration {
     @Bean
     public Configuration hbaseConfig() {
         Configuration config = HBaseConfiguration.create();
-        String path = this.getClass().getClassLoader().getResource("src/main/resources/hbase-site.xml").getPath();
+        String path = this.getClass().getClassLoader().getResource("hbase-site.xml").getPath();
         config.addResource(new Path(path));
         return HBaseConfiguration.create(config);
     }
