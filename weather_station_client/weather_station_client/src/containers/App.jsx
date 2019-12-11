@@ -20,18 +20,8 @@ class App extends Component {
         // stationData.then(res => {
         //     this.setState({stationMetrics : res.data})
         // });
-
-    }
-    render() {
         var stompClient = null;
-
-        function setConnected(connected) {
-            document.getElementById('connect').disabled = connected;
-            document.getElementById('disconnect').disabled = !connected;
-            document.getElementById('conversationDiv').style.visibility
-                = connected ? 'visible' : 'hidden';
-            document.getElementById('response').innerHTML = '';
-        }
+        var message = null;
 
         function connect() {
             var socket = new SockJS('http://localhost:8082/chat');
@@ -45,11 +35,41 @@ class App extends Component {
             });
         }
 
+        function setConnected(connected) {
+            // document.getElementById('connect').disabled = connected;
+            document.getElementById('disconnect').disabled = !connected;
+            document.getElementById('conversationDiv').style.visibility
+                = connected ? 'visible' : 'hidden';
+            document.getElementById('response').innerHTML = '';
+        }
+
+        function showMessageOutput(messageOutput) {
+            console.log(messageOutput);
+            message = messageOutput;
+            // this.setState({stationMetrics: message});
+
+            var response = document.getElementById('response');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.appendChild(document.createTextNode(messageOutput.from + ": "
+                + messageOutput.text + " (" + messageOutput.time + ")"));
+            response.appendChild(p);
+        }
+
+        connect();
+        this.setState({stompClient : stompClient});
+        this.setState({stationMetrics: message});
+    }
+    render() {
+        var {stompClient} = this.state;
+        var {stationMetrics} = this.state;
+
+
         function disconnect() {
             if(stompClient != null) {
                 stompClient.disconnect();
             }
-            setConnected(false);
+            // setConnected(false);
             console.log("Disconnected");
         }
 
@@ -61,14 +81,7 @@ class App extends Component {
 
         }
 
-        function showMessageOutput(messageOutput) {
-            var response = document.getElementById('response');
-            var p = document.createElement('p');
-            p.style.wordWrap = 'break-word';
-            p.appendChild(document.createTextNode(messageOutput.from + ": "
-                + messageOutput.text + " (" + messageOutput.time + ")"));
-            response.appendChild(p);
-        }
+        console.log("app: "+stationMetrics);
         return (
 
             <div>
@@ -77,7 +90,7 @@ class App extends Component {
                 </div>
                 <br/>
                 <div>
-                    <button id="connect" onClick={connect}>Connect</button>
+                    {/*<button id="connect" onClick={connect}>Connect</button>*/}
                     <button id="disconnect" disabled="disabled" onClick={disconnect}>
                         Disconnect
                     </button>
@@ -88,6 +101,30 @@ class App extends Component {
                     <button id="sendMessage" onClick={sendMessage}>Send</button>
                     <p id="response"></p>
                 </div>
+
+                <Table list = {stationMetrics}/>
+                <SampleComponent/>
+            </div>
+        );
+    }
+}
+
+class SampleComponent extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    sendMessage = (msg) => {
+        this.clientRef.sendMessage('/app/chat', msg);
+    };
+
+    render() {
+        return (
+            <div>
+                <SockJsClient url='http://localhost:8082/chat' topics={['/topic/messages']}
+                              onMessage={(msg) => { console.log(msg);  this.setState({stationMetrics: msg});}}
+                              ref={ (client) => { this.clientRef = client }} />
+                {/*<button id="sendMessage" onClick={this.sendMessage('gfhbdfgh')}>Send</button>*/}
             </div>
         );
     }
@@ -95,7 +132,9 @@ class App extends Component {
 
 class Table extends Component {
     render() {
-        const { list, pattern, onDismiss } = this.props;
+        var { list, pattern, onDismiss } = this.props;
+        if(list === null) list = {}
+
         console.log(Object.keys(list));
         Object.keys(list).forEach(i=>console.log(i));
         return (

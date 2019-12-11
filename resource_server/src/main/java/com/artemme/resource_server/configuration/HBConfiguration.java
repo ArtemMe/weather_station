@@ -10,10 +10,9 @@ public class HBConfiguration {
 
     @Bean
     public Configuration hbaseConfig() {
-//        Configuration config = HBaseConfiguration.create();
-//        String path = this.getClass().getClassLoader().getResource("hbase-site.xml").getPath();
-//        config.addResource(new Path(path));
-//        return HBaseConfiguration.create(config);
-        return new Configuration();
+        Configuration config = HBaseConfiguration.create();
+        String path = this.getClass().getClassLoader().getResource("hbase-site.xml").getPath();
+        config.addResource(new Path(path));
+        return HBaseConfiguration.create(config);
     }
 }
