@@ -44,6 +44,7 @@ class App extends Component {
         }
 
         function showMessageOutput(messageOutput) {
+            console.log("showMesssageOutput: ")
             console.log(messageOutput);
             message = messageOutput;
             // this.setState({stationMetrics: message});
@@ -60,10 +61,15 @@ class App extends Component {
         this.setState({stompClient : stompClient});
         this.setState({stationMetrics: message});
     }
+
+    updateMetrics = (msg) => {
+
+        console.log(msg);
+        this.setState({stationMetrics: msg.data});
+    }
     render() {
         var {stompClient} = this.state;
         var {stationMetrics} = this.state;
-
 
         function disconnect() {
             if(stompClient != null) {
@@ -73,15 +79,19 @@ class App extends Component {
             console.log("Disconnected");
         }
 
-        function sendMessage() {
-            var from = document.getElementById('from').value;
-            var text = document.getElementById('text').value;
+        var sendMessage = ()=> {
+            var from = "";//document.getElementById('from').value;
+            var text = "";//document.getElementById('text').value;
             stompClient.send("/app/chat", {},
                     JSON.stringify({'from': from, 'text': text}));
 
-        }
+        };
 
-        console.log("app: "+stationMetrics);
+        // while(true) {
+        //     sendMessage();
+        //     setTimeout(()=>console.log("dsafa"), 1000);
+        // }
+        // console.log("app: "+stationMetrics);
         return (
 
             <div>
@@ -103,7 +113,7 @@ class App extends Component {
                 </div>
 
                 <Table list = {stationMetrics}/>
-                <SampleComponent/>
+                <SampleComponent updateMetrics = {this.updateMetrics}/>
             </div>
         );
     }
@@ -122,7 +132,7 @@ class SampleComponent extends React.Component {
         return (
             <div>
                 <SockJsClient url='http://localhost:8082/chat' topics={['/topic/messages']}
-                              onMessage={(msg) => { console.log(msg);  this.setState({stationMetrics: msg});}}
+                              onMessage={(msg) => {this.props.updateMetrics(msg)}}
                               ref={ (client) => { this.clientRef = client }} />
                 {/*<button id="sendMessage" onClick={this.sendMessage('gfhbdfgh')}>Send</button>*/}
             </div>
